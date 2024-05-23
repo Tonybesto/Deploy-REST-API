@@ -51,7 +51,6 @@ jobs:
       uses: tale/kubectl-action@v1
       with: 
         base64-kube-config: ${{ secrets.KUBE_CONFIG }}
-        working-directory: kubernetes
     - run: |
         kubectl apply --validate=false -f ./kubernetes/deployment.yml
         kubectl apply --validate=false -f ./kubernetes/service.yml
