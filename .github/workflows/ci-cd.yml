@@ -53,7 +53,7 @@ jobs:
         base64-kube-config: ${{ secrets.KUBE_CONFIG }}
         working-directory: kubernetes
     - run: |
-        kubectl apply -f ./kubernetes/deployment.yml
-        kubectl apply -f ./kubernetes/service.yml
+        kubectl apply --validate=false -f ./kubernetes/deployment.yml
+        kubectl apply --validate=false -f ./kubernetes/service.yml
         
 
