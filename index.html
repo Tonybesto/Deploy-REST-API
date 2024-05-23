@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+        }
+        .task-container {
+            margin: 20px auto;
+            width: 80%;
+            max-width: 600px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .task {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .task input {
+            flex-grow: 1;
+            margin-right: 10px;
+            padding: 5px;
+        }
+        .task button {
+            margin-left: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        #addTaskDiv {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        #addTaskDiv input {
+            padding: 10px;
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Task Manager</h1>
+    <div class="task-container">
+        <div id="addTaskDiv">
+            <input type="text" id="taskName" placeholder="Task Name">
+            <input type="text" id="taskDescription" placeholder="Task Description">
+            <button id="addTaskButton">Add Task</button>
+        </div>
+        <div id="taskContainer"></div>
+    </div>
+    <script>
+        const apiUrl = 'http://localhost:5000/tasks';
+
+        document.getElementById('addTaskButton').addEventListener('click', createTask);
+
+        async function fetchTasks() {
+            const response = await fetch(apiUrl);
+            const tasks = await response.json();
+            displayTasks(tasks);
+        }
+
+        function displayTasks(tasks) {
+            const taskContainer = document.getElementById('taskContainer');
+            taskContainer.innerHTML = '';
+            tasks.forEach(task => {
+                const taskDiv = document.createElement('div');
+                taskDiv.className = 'task';
+                taskDiv.innerHTML = `
+                    <input type="text" value="${task.name}" id="name-${task.id}">
+                    <input type="text" value="${task.description}" id="description-${task.id}">
+                    <button onclick="updateTask(${task.id})">Update</button>
+                    <button onclick="deleteTask(${task.id})">Delete</button>
+                `;
+                taskContainer.appendChild(taskDiv);
+            });
+        }
+
+        async function createTask() {
+            const name = document.getElementById('taskName').value;
+            const description = document.getElementById('taskDescription').value;
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, description })
+            });
+            if (response.ok) {
+                document.getElementById('taskName').value = '';
+                document.getElementById('taskDescription').value = '';
+                fetchTasks();
+            } else {
+                alert('Error creating task');
+            }
+        }
+
+        async function updateTask(taskId) {
+            const name = document.getElementById(`name-${taskId}`).value;
+            const description = document.getElementById(`description-${taskId}`).value;
+            const response = await fetch(`${apiUrl}/${taskId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, description })
+            });
+            if (response.ok) {
+                fetchTasks();
+            } else {
+                alert('Error updating task');
+            }
+        }
+
+        async function deleteTask(taskId) {
+            const response = await fetch(`${apiUrl}/${taskId}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                fetchTasks();
+            } else {
+                alert('Error deleting task');
+            }
+        }
+
+        // Initial fetch
+        fetchTasks();
+    </script>
+</body>
+</html>
